@@ -1,0 +1,36 @@
+rda: 'http://www.records.nsw.gov.au/schemas/RDA'
+
+# RDADoc class represents the currently selected XML document.
+#
+# This class has methods for parsing XML documents, refreshing the current view (edit form, review or source), and editing the node tree  (i.e. adding, deleting, and moving context, term and class nodes).
+
+
+
+# Current node
+
+Current node = top level, context, term or class, currently selected by user
+
+Initialise with a doc and xpath. If xpath is empty use the root node, otherwise the first result from the query.
+
+Reviewpath [2]int 
+
+top level element ("rda:Term | rda:Class") + nth child with: "descendant-or-self::*[self::rda:Term or self::rda:Class]"
+
+# Reviewpath from node
+
+First, if node.name = Authority or Context, return 0,0
+Second, get the parent node that is the top child with:
+'ancestor-or-self::*[parent::rda:Authority]' (first result)
+Third, count previous siblings:
+'preceding-sibling::*[self::rda:Class or self::rda:Term]' (get length of results)
+
+
+Treepath
+
+
+# Navigate
+
+current_node.get_attribute(element name, attribute name, parent element) // if element name == nil, element = current node
+current_node.update_attribute(nil, 'publish', content)
+current_node.get_content(name, 'DateRange')
+current_node.update_nested_attribute('DateRange', name, 'circa', content, position)
