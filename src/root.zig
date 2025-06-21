@@ -55,10 +55,6 @@ export fn load_doc(path: [*c]const u8) u8 {
     return @intCast(ret);
 }
 
-export fn true_that() bool {
-    return true;
-}
-
 pub const RDA = rda.RDADoc;
 test {
     std.testing.refAllDecls(@This());
