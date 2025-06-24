@@ -15,18 +15,30 @@ const DLL_PROCESS_DETACH: windows.DWORD = 0;
 const DLL_THREAD_ATTACH: windows.DWORD = 2;
 const DLL_THREAD_DETACH: windows.DWORD = 3;
 
-pub fn DllMain(hinstDLL: windows.HINSTANCE, dwReason: windows.DWORD, lpReserved: windows.LPVOID) callconv(windows.WINAPI) windows.BOOL {
+fn dump(name: []const u8, str: []const u8) void {
+    const file = std.fs.cwd().createFile(name, .{}) catch unreachable;
+    defer file.close();
+
+    // Write the data to the file
+    file.writeAll(str) catch unreachable;
+}
+
+pub fn DllMain(hinstDLL: windows.HINSTANCE, dwReason: windows.DWORD, lpReserved: ?windows.LPVOID) callconv(windows.WINAPI) windows.BOOL {
     _ = hinstDLL;
-    _ = lpReserved;
     switch (dwReason) {
         DLL_PROCESS_ATTACH => {
-            sess = rda.RDASession.init(global_allocator) catch return windows.FALSE;
-            has_sess = true;
+            if (!has_sess) {
+                sess = rda.RDASession.init(global_allocator) catch return windows.FALSE;
+                has_sess = true;
+                dump("started", "got here");
+            }
         },
         DLL_PROCESS_DETACH => {
-            if (has_sess) {
+            dump("detach", "curses");
+            if (lpReserved != null and has_sess) {
                 has_sess = false;
                 unload();
+                dump("ended", "got here");
             }
         },
         DLL_THREAD_ATTACH, DLL_THREAD_DETACH => {},
@@ -63,7 +75,7 @@ test {
 const example = "data/SRNSW_example.xml";
 
 test "validate" {
-    sess = rda.RDASession.init(global_allocator) catch unreachable;
+    sess = rda.RDASession.init(testing.allocator) catch unreachable;
     has_sess = true;
     defer unload();
     const idx = load_doc(example);

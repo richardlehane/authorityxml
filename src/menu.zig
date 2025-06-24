@@ -79,5 +79,5 @@ pub fn free(ally: Allocator, list: *std.ArrayList(Entry)) void {
     for (list.items) |e| {
         if (e.label) |l| ally.free(l);
     }
-    list.resize(0) catch unreachable;
+    list.items.len = 0;
 }
