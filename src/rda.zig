@@ -41,6 +41,7 @@ pub const RDASession = struct {
         xml.xmlSchemaFree(self.schema);
         self.docs.deinit();
         self.allocator.destroy(self);
+        xml.xmlCleanupParser();
     }
 };
 

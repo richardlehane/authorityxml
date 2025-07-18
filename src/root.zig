@@ -15,11 +15,10 @@ const DLL_PROCESS_DETACH: windows.DWORD = 0;
 const DLL_THREAD_ATTACH: windows.DWORD = 2;
 const DLL_THREAD_DETACH: windows.DWORD = 3;
 
+// just for debugging
 fn dump(name: []const u8, str: []const u8) void {
     const file = std.fs.cwd().createFile(name, .{}) catch unreachable;
     defer file.close();
-
-    // Write the data to the file
     file.writeAll(str) catch unreachable;
 }
 
