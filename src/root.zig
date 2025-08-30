@@ -22,7 +22,7 @@ fn dump(name: []const u8, str: []const u8) void {
     file.writeAll(str) catch unreachable;
 }
 
-pub fn DllMain(hinstDLL: windows.HINSTANCE, dwReason: windows.DWORD, lpReserved: ?windows.LPVOID) callconv(windows.WINAPI) windows.BOOL {
+pub fn DllMain(hinstDLL: windows.HINSTANCE, dwReason: windows.DWORD, lpReserved: ?windows.LPVOID) callconv(std.builtin.CallingConvention.winapi) windows.BOOL {
     _ = hinstDLL;
     switch (dwReason) {
         DLL_PROCESS_ATTACH => {

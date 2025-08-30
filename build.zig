@@ -11,6 +11,7 @@ pub fn build(b: *std.Build) void {
 
     const libxml2_dep = b.dependency("libxml2", .{});
     const libxslt_dep = b.dependency("libxslt", .{});
+    const miniz_dep = b.dependency("miniz", .{});
 
     const xmlversion_h = b.addConfigHeader(.{
         .style = .{ .cmake = libxml2_dep.path("include/libxml/xmlversion.h.in") },
@@ -93,8 +94,8 @@ pub fn build(b: *std.Build) void {
         .XML_THREAD_LOCAL = null,
     });
 
-    var libxml2_sources = std.ArrayList([]const u8).init(b.allocator);
-    libxml2_sources.appendSlice(&.{
+    var libxml2_sources: std.ArrayList([]const u8) = .empty;
+    libxml2_sources.appendSlice(b.allocator, &.{
         "buf.c",
         "chvalid.c",
         "dict.c",
@@ -208,8 +209,8 @@ pub fn build(b: *std.Build) void {
         "-Winline",
         "-Wredundant-decls",
     };
-    var libxslt_sources = std.ArrayList([]const u8).init(b.allocator);
-    libxslt_sources.appendSlice(&.{
+    var libxslt_sources: std.ArrayList([]const u8) = .empty;
+    libxslt_sources.appendSlice(b.allocator, &.{
         "attrvt.c",
         "xslt.c",
         "xsltlocale.c",
@@ -241,8 +242,8 @@ pub fn build(b: *std.Build) void {
         .WITH_CRYPTO = false,
     });
 
-    var libexslt_sources = std.ArrayList([]const u8).init(b.allocator);
-    libexslt_sources.appendSlice(&.{
+    var libexslt_sources: std.ArrayList([]const u8) = .empty;
+    libexslt_sources.appendSlice(b.allocator, &.{
         "exslt.c",
         "common.c",
         "crypto.c",
@@ -295,15 +296,28 @@ pub fn build(b: *std.Build) void {
         xml_mod.linkSystemLibrary("bcrypt", .{});
     }
 
+    const miniz_translate_c = b.addTranslateC(.{
+        .root_source_file = miniz_dep.path("miniz.h"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    const miniz_mod = miniz_translate_c.createModule();
+    miniz_mod.addCSourceFile(.{
+        .file = miniz_dep.path("miniz.c"),
+    });
+
     const lib_mod = b.createModule(.{
         .root_source_file = b.path("src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
     lib_mod.addImport("xml", xml_mod);
+    lib_mod.addImport("miniz", miniz_mod);
     lib_mod.addAnonymousImport("rda_schema", .{ .root_source_file = b.path("data/SRNSW_RDA_permissive.xsd") });
 
-    const lib = b.addSharedLibrary(.{
+    const lib = b.addLibrary(.{
+        .linkage = .dynamic,
         .name = "authority",
         .root_module = lib_mod,
     });

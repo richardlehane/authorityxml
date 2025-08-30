@@ -4,6 +4,7 @@ const Allocator = std.mem.Allocator;
 const node = @import("node.zig");
 const menu = @import("menu.zig");
 const xml = @import("xml");
+const miniz = @import("miniz");
 
 const max_file = 100 * 1_048_576; //100MB
 const srnsw_schema = @embedFile("rda_schema");
@@ -22,14 +23,14 @@ pub const RDASession = struct {
         ptr.* = .{
             .allocator = allocator,
             .schema = xml.xmlSchemaParse(schema_ctx),
-            .docs = std.ArrayList(*RDADoc).init(allocator),
+            .docs = .empty,
         };
         return ptr;
     }
 
     pub fn load(self: *RDASession, path: []const u8) !usize {
         const doc = try RDADoc.load(self, path);
-        try self.docs.append(doc);
+        try self.docs.append(self.allocator, doc);
         return self.docs.items.len - 1;
     }
 
@@ -39,7 +40,7 @@ pub const RDASession = struct {
 
     pub fn deinit(self: *RDASession) void {
         xml.xmlSchemaFree(self.schema);
-        self.docs.deinit();
+        self.docs.deinit(self.allocator);
         self.allocator.destroy(self);
         xml.xmlCleanupParser();
     }
@@ -59,7 +60,7 @@ pub const RDADoc = struct {
         ptr.* = .{
             .session = session,
             .doc = d,
-            .entries = std.ArrayList(menu.Entry).init(session.allocator),
+            .entries = .empty,
             .current = 0,
         };
         try ptr.refresh();
@@ -69,7 +70,7 @@ pub const RDADoc = struct {
     pub fn deinit(self: *RDADoc) void {
         xml.xmlFreeDoc(self.doc);
         menu.free(self.session.allocator, &self.entries);
-        self.entries.deinit();
+        self.entries.deinit(self.session.allocator);
         self.session.allocator.destroy(self);
     }
 
@@ -131,4 +132,11 @@ test "transform" {
     const rda_doc = try RDADoc.load(session, example);
     defer rda_doc.deinit();
     try testing.expect(rda_doc.transform("data/stylesheets/preview_index.xsl", "test.html"));
+    try std.fs.cwd().deleteFile("test.html");
+}
+
+test "compress" {
+    const status = miniz.mz_zip_add_mem_to_archive_file_in_place("test.zip", "test.txt", "test", 5, "comment", 7, miniz.MZ_BEST_COMPRESSION);
+    try testing.expect(status == 1);
+    try std.fs.cwd().deleteFile("test.zip");
 }

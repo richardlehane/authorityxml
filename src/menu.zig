@@ -58,7 +58,7 @@ fn add(ally: Allocator, list: *std.ArrayList(Entry), curr: xml.xmlNodePtr, depth
         const tc = TermClass.fromStr(current_node.*.name);
         if (current_node.*.type == xml.XML_ELEMENT_NODE and tc != .Neither) {
             const label = makeLabel(ally, current_node, tc);
-            try list.append(.{
+            try list.append(ally, .{
                 .typ = tc,
                 .depth = depth,
                 .node = current_node,
