@@ -1,13 +1,13 @@
 const std = @import("std");
 const windows = std.os.windows;
 const testing = std.testing;
-const rda = @import("rda.zig");
+const Session = @import("Session.zig");
 const xml = @import("xml");
 
 const max_file = 100 * 1_048_576; //100MB
 
 const global_allocator = std.heap.c_allocator;
-var sess: *rda.RDASession = undefined;
+var sess: *Session = undefined;
 var has_sess: bool = false;
 
 const DLL_PROCESS_ATTACH: windows.DWORD = 1;
@@ -27,7 +27,7 @@ pub fn DllMain(hinstDLL: windows.HINSTANCE, dwReason: windows.DWORD, lpReserved:
     switch (dwReason) {
         DLL_PROCESS_ATTACH => {
             if (!has_sess) {
-                sess = rda.RDASession.init(global_allocator) catch return windows.FALSE;
+                sess = Session.init(global_allocator) catch return windows.FALSE;
                 has_sess = true;
                 dump("started", "got here");
             }
@@ -66,7 +66,6 @@ export fn load_doc(path: [*c]const u8) u8 {
     return @intCast(ret);
 }
 
-pub const RDA = rda.RDADoc;
 test {
     std.testing.refAllDecls(@This());
 }
@@ -74,7 +73,7 @@ test {
 const example = "data/SRNSW_example.xml";
 
 test "validate" {
-    sess = rda.RDASession.init(testing.allocator) catch unreachable;
+    sess = Session.init(testing.allocator) catch unreachable;
     has_sess = true;
     defer unload();
     const idx = load_doc(example);

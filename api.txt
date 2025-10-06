@@ -1,36 +1,47 @@
-rda: 'http://www.records.nsw.gov.au/schemas/RDA'
-
-# RDADoc class represents the currently selected XML document.
-#
-# This class has methods for parsing XML documents, refreshing the current view (edit form, review or source), and editing the node tree  (i.e. adding, deleting, and moving context, term and class nodes).
-
-
-
-# Current node
-
-Current node = top level, context, term or class, currently selected by user
-
-Initialise with a doc and xpath. If xpath is empty use the root node, otherwise the first result from the query.
-
-Reviewpath [2]int 
-
-top level element ("rda:Term | rda:Class") + nth child with: "descendant-or-self::*[self::rda:Term or self::rda:Class]"
-
-# Reviewpath from node
-
-First, if node.name = Authority or Context, return 0,0
-Second, get the parent node that is the top child with:
-'ancestor-or-self::*[parent::rda:Authority]' (first result)
-Third, count previous siblings:
-'preceding-sibling::*[self::rda:Class or self::rda:Term]' (get length of results)
-
-
-Treepath
-
-
-# Navigate
-
-current_node.get_attribute(element name, attribute name, parent element) // if element name == nil, element = current node
-current_node.update_attribute(nil, 'publish', content)
-current_node.get_content(name, 'DateRange')
-current_node.update_nested_attribute('DateRange', name, 'circa', content, position)
+int empty() [x]
+int load(PlatformFile f) [x]
+List<TreeNode> tree(int index, Counter ctr)
+String asString(int index) [x]
+void setCurrent(int index, Ref ref)
+void dropNode(int index, Ref ref)
+void addChild(int index, Ref ref, NodeType nt)
+void addSibling(int index, Ref ref, NodeType nt)
+bool moveUp(int index, Ref ref)
+bool moveDown(int index, Ref ref)
+NodeType getType(int index)
+String? get(int index, String name)
+String? getDate(int index, DateType dt)
+bool getCirca(int index, DateType dt)
+void set(int index, String name, String? value)
+void setDate(int index, DateType dt, String? value)
+void setCirca(int index, DateType dt, bool value)
+List<XmlElement>? getParagraphs(int index, String name)
+void setParagraphs(int index, String name, List<XmlElement>? paras)
+int multiLen(int index, String name)
+bool multiEmpty(int index, String name, int idx)
+StatusType multiStatusType(int index, int idx)
+SeeRefType multiSeeRefType(int index, int idx)
+int multiAdd(int index, String name, String? sub)
+void multiAddSeeRef(int index, SeeRefType srt)
+void multiDrop(int index, String name, int idx)
+void multiUp(int index, String name, int idx)
+void multiDown(int index, String name, int idx)
+void multiSet(int index, String name, int idx, String? sub, String? val)
+String? multiGet(int index, String name, int idx, String? sub)
+List<XmlElement>? multiGetParagraphs(
+    int index,
+    String name,
+    int idx,
+    String? sub,
+  )
+void multiSetParagraphs(
+    int index,
+    String name,
+    int idx,
+    String? sub,
+    List<XmlElement>? val,
+  )
+  int termsRefLen(int index, String name, int idx)
+  void termsRefAdd(int index, String name, int idx)
+  String? termsRefGet(int index, String name, int idx, int tidx)
+  void termsRefSet(int index, String name, int idx, int tidx, String? val)
