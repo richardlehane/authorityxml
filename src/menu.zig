@@ -58,8 +58,9 @@ pub const Entry = struct {
 //     return node.xmlStrJoin(ally, &.{ itemno, xml.xmlNodeGetContent(title.?) }, " ") catch null;
 // }
 
-fn countContext(curr: xml.xmlNodePtr) u8 {
+fn countContext(current_node: xml.xmlNodePtr) u8 {
     var count: u8 = 0;
+    var curr = current_node.*.children;
     while (curr != null) : (curr = curr.*.next) {
         const tc = NodeType.fromStr(curr.*.name);
         if (tc == .Context) count = count + 1;
@@ -67,9 +68,9 @@ fn countContext(curr: xml.xmlNodePtr) u8 {
     return count;
 }
 
-fn countChildren(children: xml.xmlNodePtr) u8 {
+fn countChildren(current_node: xml.xmlNodePtr) u8 {
     var count: u8 = 0;
-    var curr: xml.xmlNodePtr = children;
+    var curr = current_node.*.children;
     while (curr != null) : (curr = curr.*.next) {
         const tc = NodeType.fromStr(curr.*.name);
         if (tc == .Term or tc == .Class) count = count + 1;
@@ -77,13 +78,13 @@ fn countChildren(children: xml.xmlNodePtr) u8 {
     return count;
 }
 
-fn add(list: *std.ArrayList(u8), ally: Allocator, curr: xml.xmlNodePtr) !void {
-    var current_node: xml.xmlNodePtr = curr;
-    while (current_node != null) : (current_node = current_node.*.next) {
-        switch (NodeType.fromStr(current_node.*.name)) {
+fn add(list: *std.ArrayList(u8), ally: Allocator, current_node: xml.xmlNodePtr) !void {
+    var curr: xml.xmlNodePtr = current_node;
+    while (curr != null) : (curr = curr.*.next) {
+        switch (NodeType.fromStr(curr.*.name)) {
             .Authority => {
-                try list.append(ally, countChildren(curr));
-                try add(list, ally, current_node.*.children);
+                try list.append(ally, countContext(curr));
+                try add(list, ally, curr.*.children);
             },
             .Context => {
                 const title = node.childN(curr, NodeType.Context.title(), 0);
