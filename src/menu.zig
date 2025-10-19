@@ -1,7 +1,7 @@
 const std = @import("std");
 const testing = std.testing;
 const Allocator = std.mem.Allocator;
-const node = @import("node.zig");
+const node = @import("node.zig"); // todo: get rid of these helpers
 const xml = @import("xml");
 
 pub const NodeType = enum(u8) {
@@ -40,12 +40,12 @@ pub const NodeType = enum(u8) {
     }
 };
 
-pub const Entry = struct {
-    typ: NodeType,
-    depth: u8,
-    node: xml.xmlNodePtr,
-    label: ?[:0]const u8,
-};
+// pub const Entry = struct {
+//     typ: NodeType,
+//     depth: u8,
+//     node: xml.xmlNodePtr,
+//     label: ?[:0]const u8,
+// };
 
 // fn makeLabel(ally: Allocator, curr: xml.xmlNodePtr, tc: NodeType) ?[:0]const u8 {
 //     const itemno = xml.xmlGetProp(curr, "itemno");
