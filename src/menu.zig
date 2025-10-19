@@ -84,6 +84,7 @@ fn add(list: *std.ArrayList(u8), ally: Allocator, current_node: xml.xmlNodePtr) 
         switch (NodeType.fromStr(curr.*.name)) {
             .Authority => {
                 try list.append(ally, countContext(curr));
+                try list.append(ally, countChildren(curr));
                 try add(list, ally, curr.*.children);
             },
             .Context => {

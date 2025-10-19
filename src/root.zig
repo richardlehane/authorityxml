@@ -3,7 +3,6 @@ const windows = std.os.windows;
 const testing = std.testing;
 const Session = @import("Session.zig");
 const xml = @import("xml");
-const Package = @import("package.zig").Package;
 
 const max_file = 100 * 1_048_576; //100MB
 
@@ -80,7 +79,11 @@ export fn freeStr(ptr: [*c]u8) void {
 
 // for testing. List format is: number of entries, entries
 // Entry format is: length, bytes
-var t_data = [_]u8{ 2, 3, 65, 66, 67, 2, 68, 69 };
+pub const Package = extern struct { length: i32, data: ?[*]u8 };
+
+// data is num_context,num_termclasses, contextentries, termclass entries
+// Each context entry is len,text
+// Each termclass entry is [node_type, itemno_len, itemno_chars, title_len, title_chars, num_children], children.
 
 export fn context(idx: u8) Package {
     const doc = sess.get(idx);
