@@ -8,3 +8,4 @@ This is a helper library to support authority editor. It is a zig wrapper over l
 
 zig build -Dtarget=wasm32-wasi (test with wasmtime) // broken - switch to emscripten [https://github.com/ziglang/zig/issues/10836#issuecomment-1951538464] or https://ziggit.dev/t/how-do-i-access-emitted-object-files-in-the-build-system/6231/8
 
+zig build -Doptimize=ReleaseFast

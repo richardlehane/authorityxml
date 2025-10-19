@@ -3,12 +3,14 @@ const windows = std.os.windows;
 const testing = std.testing;
 const Session = @import("Session.zig");
 const xml = @import("xml");
+const Package = @import("package.zig").Package;
 
 const max_file = 100 * 1_048_576; //100MB
 
 const global_allocator = std.heap.c_allocator;
 var sess: *Session = undefined;
 var has_sess: bool = false;
+var freefn: ?*const fn (?*anyopaque) callconv(.c) void = null;
 
 const DLL_PROCESS_ATTACH: windows.DWORD = 1;
 const DLL_PROCESS_DETACH: windows.DWORD = 0;
@@ -27,6 +29,7 @@ pub fn DllMain(hinstDLL: windows.HINSTANCE, dwReason: windows.DWORD, lpReserved:
     switch (dwReason) {
         DLL_PROCESS_ATTACH => {
             if (!has_sess) {
+                freefn = xml.xmlFree orelse null;
                 sess = Session.init(global_allocator) catch return windows.FALSE;
                 has_sess = true;
                 dump("started", "got here");
@@ -64,6 +67,24 @@ export fn valid(idx: u8) bool {
 export fn load_doc(path: [*c]const u8) u8 {
     const ret = sess.load(std.mem.span(path)) catch return 255;
     return @intCast(ret);
+}
+
+export fn toStr(idx: u8) [*c]u8 {
+    var doc = sess.get(idx);
+    return doc.toStr();
+}
+
+export fn freeStr(ptr: [*c]u8) void {
+    freefn.?(ptr);
+}
+
+// for testing. List format is: number of entries, entries
+// Entry format is: length, bytes
+var t_data = [_]u8{ 2, 3, 65, 66, 67, 2, 68, 69 };
+
+export fn context(idx: u8) Package {
+    const doc = sess.get(idx);
+    return .{ .length = @intCast(doc.tree.items.len), .data = doc.tree.items.ptr };
 }
 
 test {

@@ -50,7 +50,7 @@ pub fn xmlStrJoin(ally: Allocator, strs: []const [*]const xml.xmlChar, j: []cons
     return arr[0 .. len - 1 :0];
 }
 
-/// Returns the Nth child of node
+/// Returns the Nth child of node with name
 pub fn childN(node: xml.xmlNodePtr, name: []const u8, nth: usize) ?xml.xmlNodePtr {
     var current_node = node.*.children;
     var idx: usize = 0;
@@ -63,7 +63,7 @@ pub fn childN(node: xml.xmlNodePtr, name: []const u8, nth: usize) ?xml.xmlNodePt
     return null;
 }
 
-/// Returns the contents of the first child element of node with the given name
+/// Returns the contents of named attribute of node
 pub fn attrValue(ally: Allocator, node: xml.xmlNodePtr, name: []const u8) ?[:0]const u8 {
     return xmlStrDup(ally, xml.xmlGetProp(node, name)) catch null;
 }
