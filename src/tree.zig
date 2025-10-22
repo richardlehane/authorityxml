@@ -78,6 +78,10 @@ fn countChildren(current_node: xml.xmlNodePtr) u8 {
     return count;
 }
 
+// data is num_context,num_termclasses, contextentries, termclass entries
+// Each context entry is len,text
+// Each termclass entry is [node_type, itemno_len, itemno_chars, title_len, title_chars, num_children], children.
+
 fn add(list: *std.ArrayList(u8), ally: Allocator, current_node: xml.xmlNodePtr) !void {
     var curr: xml.xmlNodePtr = current_node;
     while (curr != null) : (curr = curr.*.next) {
@@ -98,7 +102,27 @@ fn add(list: *std.ArrayList(u8), ally: Allocator, current_node: xml.xmlNodePtr) 
                     if (len > 0) try list.appendSlice(ally, std.mem.span(chars));
                 }
             },
-            else => {},
+            .Term, .Class => |nt| {
+                try list.append(ally, @intFromEnum(nt));
+                const chars = xml.xmlGetProp(curr, "itemno");
+                const len: u8 = @truncate(std.mem.len(chars));
+                try list.append(ally, len);
+                if (len > 0) try list.appendSlice(ally, std.mem.span(chars));
+                const title = node.childN(curr, nt.title(), 0);
+                if (title == null) {
+                    try list.append(ally, 0);
+                } else {
+                    const tchars = xml.xmlNodeGetContent(title.?);
+                    const tlen: u8 = @truncate(std.mem.len(tchars));
+                    try list.append(ally, tlen);
+                    if (len > 0) try list.appendSlice(ally, std.mem.span(tchars));
+                }
+                if (nt == .Term) {
+                    try list.append(ally, countChildren(curr));
+                    try add(list, ally, curr.*.children);
+                }
+            },
+            .None => {},
         }
     }
 }

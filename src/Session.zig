@@ -3,7 +3,6 @@ const testing = std.testing;
 const Allocator = std.mem.Allocator;
 const Document = @import("Document.zig");
 const node = @import("node.zig");
-const menu = @import("menu.zig");
 const xml = @import("xml");
 const miniz = @import("miniz");
 

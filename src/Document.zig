@@ -2,7 +2,7 @@ const std = @import("std");
 const testing = std.testing;
 const Allocator = std.mem.Allocator;
 const node = @import("node.zig");
-const menu = @import("menu.zig");
+const tree = @import("tree.zig");
 const xml = @import("xml");
 const miniz = @import("miniz");
 const Session = @import("Session.zig");
@@ -25,7 +25,7 @@ const srnsw_blank =
 // Document fields
 session: *Session,
 doc: xml.xmlDocPtr,
-tree: std.ArrayList(u8),
+tree_menu: std.ArrayList(u8),
 current: xml.xmlNodePtr,
 
 fn loadMem(session: *Session, bytes: []const u8, len: usize) !*Document {
@@ -34,7 +34,7 @@ fn loadMem(session: *Session, bytes: []const u8, len: usize) !*Document {
     ptr.* = .{
         .session = session,
         .doc = d,
-        .tree = .empty,
+        .tree_menu = .empty,
         .current = 0,
     };
     try ptr.refresh();
@@ -55,12 +55,12 @@ pub fn load(session: *Session, path: []const u8) !*Document {
 
 pub fn deinit(self: *Document) void {
     xml.xmlFreeDoc(self.doc);
-    self.tree.deinit(self.session.allocator);
+    self.tree_menu.deinit(self.session.allocator);
     self.session.allocator.destroy(self);
 }
 
 pub fn refresh(self: *Document) !void {
-    try menu.refresh(&self.tree, self.session.allocator, self.doc);
+    try tree.refresh(&self.tree_menu, self.session.allocator, self.doc);
 }
 
 pub fn toStr(self: *Document) [*c]u8 {
@@ -108,7 +108,7 @@ test "empty" {
     defer session.deinit();
     const doc = try Document.empty(session);
     defer doc.deinit();
-    //try testing.expect(doc.entries.items.len == 4);
+    try testing.expectEqual(doc.tree_menu.items.len, 28);
 }
 
 test "toStr" {
@@ -117,18 +117,16 @@ test "toStr" {
     const doc = try Document.empty(session);
     defer doc.deinit();
     const str = doc.toStr();
-    std.debug.print("{s}", .{str});
+    try testing.expectEqual(std.mem.sliceTo(str, 49).len, 15);
     freeStr(str);
-    //try testing.expect(false);
 }
 
-test "menu" {
+test "tree" {
     const session = try Session.init(testing.allocator);
     defer session.deinit();
     const doc = try Document.load(session, example);
     defer doc.deinit();
-    //try testing.expect(doc.entries.items.len == 7);
-    // rda_doc.print();
+    try testing.expectEqual(doc.tree_menu.items.len, 293);
 }
 
 test "transform" {
