@@ -118,8 +118,9 @@ fn add(list: *std.ArrayList(u8), ally: Allocator, current_node: xml.xmlNodePtr) 
                     if (len > 0) try list.appendSlice(ally, std.mem.span(tchars));
                 }
                 if (nt == .Term) {
-                    try list.append(ally, countChildren(curr));
-                    try add(list, ally, curr.*.children);
+                    const children = countChildren(curr);
+                    try list.append(ally, children);
+                    if (children > 0) try add(list, ally, curr.*.children);
                 }
             },
             .None => {},
