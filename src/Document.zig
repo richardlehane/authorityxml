@@ -37,7 +37,6 @@ fn loadMem(session: *Session, bytes: []const u8, len: usize) !*Document {
         .tree_menu = .empty,
         .current = 0,
     };
-    try ptr.refresh();
     return ptr;
 }
 
@@ -59,7 +58,7 @@ pub fn deinit(self: *Document) void {
     self.session.allocator.destroy(self);
 }
 
-pub fn refresh(self: *Document) !void {
+pub fn refreshTree(self: *Document) !void {
     try tree.refresh(&self.tree_menu, self.session.allocator, self.doc);
 }
 
@@ -108,6 +107,7 @@ test "empty" {
     defer session.deinit();
     const doc = try Document.empty(session);
     defer doc.deinit();
+    try doc.refreshTree();
     try testing.expectEqual(doc.tree_menu.items.len, 28);
 }
 
@@ -126,6 +126,7 @@ test "tree" {
     defer session.deinit();
     const doc = try Document.load(session, example);
     defer doc.deinit();
+    try doc.refreshTree();
     try testing.expectEqual(doc.tree_menu.items.len, 293);
 }
 

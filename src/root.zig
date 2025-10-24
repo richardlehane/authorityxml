@@ -87,6 +87,7 @@ pub const Package = extern struct { length: i32, data: ?[*]u8 };
 
 export fn context(idx: u8) Package {
     const doc = sess.get(idx);
+    doc.refreshTree() catch return .{ .length = 0, .data = null };
     return .{ .length = @intCast(doc.tree_menu.items.len), .data = doc.tree_menu.items.ptr };
 }
 
